@@ -653,8 +653,23 @@ function printPDF(){
 }
 
 // ── WORKFLOW ──────────────────────────────────────────────────────────────
-const UOSLAB_EMAIL = "llc@uoslab.com";
-const RIVA_EMAILS  = "y.lytvynenko@riva-steel.com,d.dovgopoliy@uoslab.com";
+const UOSLAB_EMAIL    = "llc@uoslab.com";
+const RIVA_TO         = "y.lytvynenko@riva-steel.com";
+const RIVA_EMAILS     = "y.lytvynenko@riva-steel.com,d.dovgopoliy@uoslab.com";
+const EJS_SERVICE     = "service_gat77rc";
+const EJS_TEMPLATE    = "template_4yentbd";
+const EJS_PUBLIC_KEY  = "bdhUa9l27noI32q0n";
+
+function loadEmailJS(){
+  return new Promise((resolve,reject)=>{
+    if(window.emailjs){resolve(window.emailjs);return;}
+    const s=document.createElement("script");
+    s.src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js";
+    s.onload=()=>resolve(window.emailjs);
+    s.onerror=()=>reject(new Error("EmailJS не завантажився"));
+    document.head.appendChild(s);
+  });
+}
 
 function buildConfirmLink(compId){
   const c=compensations.find(x=>x.id===compId);if(!c)return"";
@@ -668,7 +683,7 @@ function buildConfirmLink(compId){
   return`https://uoslab-new.github.io/uoslab-registry/confirm.html?d=${data}`;
 }
 
-function sendRequest(compId){
+async function sendRequest(compId){
   const c=compensations.find(x=>x.id===compId);if(!c)return;
   const exp=expenses.find(e=>e.id==c.expenseId);
   const expLabel=exp?`${exp.contractor} / ${exp.docRef||exp.category}`:"Загальна";
@@ -691,37 +706,8 @@ ${window.location.origin}${window.location.pathname.replace('uoslab-registry.htm
 З повагою,
 ТОВ УОСЛАБ
 ${UOSLAB_EMAIL}`);
-  const htmlBody = `<p>Шановний партнер,</p>
-<p>УОСЛАБ направляє запит на компенсацію понесених витрат:</p>
-<ul>
-<li><b>Витрата:</b> ${expLabel}</li>
-<li><b>Форма компенсації:</b> ${c.type}</li>
-<li><b>Сума:</b> ${fmt(c.amount)}</li>
-<li><b>Опис:</b> ${c.description||"—"}</li>
-<li><b>Очікувана дата:</b> ${c.expectedDate?fmtD(c.expectedDate):"—"}</li>
-</ul>
-<p>Для підтвердження компенсації, будь ласка, натисніть кнопку:</p>
-<p><a href="${confirmUrl}" style="background:#16A34A;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:bold">✅ Підтвердити компенсацію</a></p>
-<p>З повагою,<br>ТОВ УОСЛАБ<br>${UOSLAB_EMAIL}</p>`;
-  // Open mailto with plain text fallback + HTML hint
-  const plainBody = encodeURIComponent(
-`Шановний партнер,
+  // Send request via mailto
 
-УОСЛАБ направляє запит на компенсацію понесених витрат:
-
-Витрата: ${expLabel}
-Форма компенсації: ${c.type}
-Сума: ${fmt(c.amount)}
-Опис: ${c.description||"—"}
-Очікувана дата: ${c.expectedDate?fmtD(c.expectedDate):"—"}
-
-Для підтвердження натисніть посилання:
-${confirmUrl}
-
-З повагою,
-ТОВ УОСЛАБ
-${UOSLAB_EMAIL}`);
-  window.open(`mailto:${RIVA_EMAILS}?subject=${subject}&body=${plainBody}`,"_blank");
   compensations=compensations.map(x=>x.id===compId?{...x,status:"sent",sentDate:new Date().toISOString().slice(0,10)}:x);
   persist();render();
 }
@@ -737,19 +723,7 @@ function markConfirmed(compId){
 Очікуємо фактичного надходження.
 
 ТОВ УОСЛАБ`);
-  const htmlBody = `<p>Шановний партнер,</p>
-<p>УОСЛАБ направляє запит на компенсацію понесених витрат:</p>
-<ul>
-<li><b>Витрата:</b> ${expLabel}</li>
-<li><b>Форма компенсації:</b> ${c.type}</li>
-<li><b>Сума:</b> ${fmt(c.amount)}</li>
-<li><b>Опис:</b> ${c.description||"—"}</li>
-<li><b>Очікувана дата:</b> ${c.expectedDate?fmtD(c.expectedDate):"—"}</li>
-</ul>
-<p>Для підтвердження компенсації, будь ласка, натисніть кнопку:</p>
-<p><a href="${confirmUrl}" style="background:#16A34A;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:bold">✅ Підтвердити компенсацію</a></p>
-<p>З повагою,<br>ТОВ УОСЛАБ<br>${UOSLAB_EMAIL}</p>`;
-  // Open mailto with plain text fallback + HTML hint
+  // Send request via mailto
   const plainBody = encodeURIComponent(
 `Шановний партнер,
 
@@ -762,11 +736,27 @@ function markConfirmed(compId){
 Очікувана дата: ${c.expectedDate?fmtD(c.expectedDate):"—"}
 
 Для підтвердження натисніть посилання:
-${confirmUrl}
+${shortUrl}`);
+  // Try to shorten URL via TinyURL
+  let shortUrl = confirmUrl;
+  try {
+    const resp = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(confirmUrl)}`);
+    if(resp.ok) shortUrl = await resp.text();
+  } catch(e) { /* fallback to full URL */ }
+  
+  const plainBody = encodeURIComponent(
+`Шановний партнер,
 
-З повагою,
-ТОВ УОСЛАБ
-${UOSLAB_EMAIL}`);
+УОСЛАБ направляє запит на компенсацію понесених витрат:
+
+Витрата: ${expLabel}
+Форма компенсації: ${c.type}
+Сума: ${fmt(c.amount)}
+Опис: ${c.description||"—"}
+Очікувана дата: ${c.expectedDate?fmtD(c.expectedDate):"—"}
+
+Для підтвердження натисніть посилання:
+${shortUrl}`);
   window.open(`mailto:${RIVA_EMAILS}?subject=${subject}&body=${plainBody}`,"_blank");
   persist();render();
 }

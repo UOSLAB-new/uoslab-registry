@@ -59,16 +59,17 @@ function confirmComp(data){
 Сума: ${fmt(data.amount)}
 Опис: ${data.description||"—"}
 
-Компенсацію буде здійснено у погодженій формі.
-
-З повагою,
-ТОВ Ріва-Сталь`);
-  window.open(`mailto:${data.uoslabEmail}?subject=${subject}&body=${body}`,"_blank");
+Компенсацію буде здійснено у погодженій формі.`);
+  window.open(`mailto:${data.uoslabEmail}?cc=d.dovgopoliy@uoslab.com&subject=${subject}&body=${body}`,"_blank");
   document.getElementById("content").innerHTML=`
     <div class="success">
       <div class="success-icon">✅</div>
-      <div class="success-title">Підтвердження надіслано</div>
-      <div class="success-sub">Лист з підтвердженням відкрито у вашій поштовій програмі.<br>Надішліть його на адресу <b>${data.uoslabEmail}</b></div>
+      <div class="success-title">Дякуємо за підтвердження!</div>
+      <div class="success-sub">
+        У вашій поштовій програмі відкрився лист-підтвердження.<br>
+        Будь ласка, <b>надішліть його</b> — це зафіксує вашу згоду.<br><br>
+        Отримувач: <b>${data.uoslabEmail}</b>
+      </div>
     </div>
     <div class="footer">ТОВ УОСЛАБ · llc@uoslab.com</div>`;
 }
