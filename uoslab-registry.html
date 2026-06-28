@@ -665,14 +665,14 @@ function buildConfirmLink(compId){
     expLabel:exp?`${exp.contractor} / ${exp.docRef||exp.category}`:"Загальна",
     uoslabEmail:UOSLAB_EMAIL
   })));
-  return data;
+  return`https://uoslab-new.github.io/uoslab-registry/confirm.html?d=${data}`;
 }
 
 function sendRequest(compId){
   const c=compensations.find(x=>x.id===compId);if(!c)return;
   const exp=expenses.find(e=>e.id==c.expenseId);
   const expLabel=exp?`${exp.contractor} / ${exp.docRef||exp.category}`:"Загальна";
-  const link=buildConfirmLink(compId);
+  const confirmUrl=buildConfirmLink(compId);
   const subject=encodeURIComponent(`Запит на компенсацію витрат УОСЛАБ — ${fmt(c.amount)}`);
   const body=encodeURIComponent(
 `Шановний партнер,
@@ -691,7 +691,37 @@ ${window.location.origin}${window.location.pathname.replace('uoslab-registry.htm
 З повагою,
 ТОВ УОСЛАБ
 ${UOSLAB_EMAIL}`);
-  window.open(`mailto:${RIVA_EMAILS}?subject=${subject}&body=${body}`,"_blank");
+  const htmlBody = `<p>Шановний партнер,</p>
+<p>УОСЛАБ направляє запит на компенсацію понесених витрат:</p>
+<ul>
+<li><b>Витрата:</b> ${expLabel}</li>
+<li><b>Форма компенсації:</b> ${c.type}</li>
+<li><b>Сума:</b> ${fmt(c.amount)}</li>
+<li><b>Опис:</b> ${c.description||"—"}</li>
+<li><b>Очікувана дата:</b> ${c.expectedDate?fmtD(c.expectedDate):"—"}</li>
+</ul>
+<p>Для підтвердження компенсації, будь ласка, натисніть кнопку:</p>
+<p><a href="${confirmUrl}" style="background:#16A34A;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:bold">✅ Підтвердити компенсацію</a></p>
+<p>З повагою,<br>ТОВ УОСЛАБ<br>${UOSLAB_EMAIL}</p>`;
+  // Open mailto with plain text fallback + HTML hint
+  const plainBody = encodeURIComponent(
+`Шановний партнер,
+
+УОСЛАБ направляє запит на компенсацію понесених витрат:
+
+Витрата: ${expLabel}
+Форма компенсації: ${c.type}
+Сума: ${fmt(c.amount)}
+Опис: ${c.description||"—"}
+Очікувана дата: ${c.expectedDate?fmtD(c.expectedDate):"—"}
+
+Для підтвердження натисніть посилання:
+${confirmUrl}
+
+З повагою,
+ТОВ УОСЛАБ
+${UOSLAB_EMAIL}`);
+  window.open(`mailto:${RIVA_EMAILS}?subject=${subject}&body=${plainBody}`,"_blank");
   compensations=compensations.map(x=>x.id===compId?{...x,status:"sent",sentDate:new Date().toISOString().slice(0,10)}:x);
   persist();render();
 }
@@ -707,7 +737,37 @@ function markConfirmed(compId){
 Очікуємо фактичного надходження.
 
 ТОВ УОСЛАБ`);
-  window.open(`mailto:${RIVA_EMAILS}?subject=${subject}&body=${body}`,"_blank");
+  const htmlBody = `<p>Шановний партнер,</p>
+<p>УОСЛАБ направляє запит на компенсацію понесених витрат:</p>
+<ul>
+<li><b>Витрата:</b> ${expLabel}</li>
+<li><b>Форма компенсації:</b> ${c.type}</li>
+<li><b>Сума:</b> ${fmt(c.amount)}</li>
+<li><b>Опис:</b> ${c.description||"—"}</li>
+<li><b>Очікувана дата:</b> ${c.expectedDate?fmtD(c.expectedDate):"—"}</li>
+</ul>
+<p>Для підтвердження компенсації, будь ласка, натисніть кнопку:</p>
+<p><a href="${confirmUrl}" style="background:#16A34A;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:bold">✅ Підтвердити компенсацію</a></p>
+<p>З повагою,<br>ТОВ УОСЛАБ<br>${UOSLAB_EMAIL}</p>`;
+  // Open mailto with plain text fallback + HTML hint
+  const plainBody = encodeURIComponent(
+`Шановний партнер,
+
+УОСЛАБ направляє запит на компенсацію понесених витрат:
+
+Витрата: ${expLabel}
+Форма компенсації: ${c.type}
+Сума: ${fmt(c.amount)}
+Опис: ${c.description||"—"}
+Очікувана дата: ${c.expectedDate?fmtD(c.expectedDate):"—"}
+
+Для підтвердження натисніть посилання:
+${confirmUrl}
+
+З повагою,
+ТОВ УОСЛАБ
+${UOSLAB_EMAIL}`);
+  window.open(`mailto:${RIVA_EMAILS}?subject=${subject}&body=${plainBody}`,"_blank");
   persist();render();
 }
 
