@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>УОСЛАБ · Реєстр витрат за Ріва-Сталь</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Arial,sans-serif;background:#F1F5F9;min-height:100vh;padding-bottom:48px}
+  .header{background:linear-gradient(135deg,#1E3A5F 0%,#2563EB 100%);padding:24px 32px;color:#fff}
+  .header-inner{max-width:1200px;margin:0 auto;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px}
+  .header-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;opacity:.7;margin-bottom:4px}
+  .header-title{font-size:22px;font-weight:700}
+  .header-sub{font-size:12px;opacity:.65;margin-top:4px}
+  .header-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+  .btn-pdf{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:8px;padding:10px 18px;font-weight:600;font-size:13px;cursor:pointer}
+  .btn-primary{background:#fff;color:#1E3A5F;border:none;border-radius:8px;padding:10px 20px;font-weight:600;font-size:13px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+  .btn-green{background:#16A34A;color:#fff;border:none;border-radius:8px;padding:10px 18px;font-weight:600;font-size:13px;cursor:pointer}
+  .main{max-width:1200px;margin:0 auto;padding:0 24px}
+  /* Tabs */
+  .tabs{display:flex;gap:4px;margin-top:20px}
+  .tab{padding:10px 20px;border-radius:8px 8px 0 0;font-size:13px;font-weight:600;cursor:pointer;border:none;background:#E2E8F0;color:#64748B}
+  .tab.active{background:#fff;color:#1E3A5F}
+  .tab-panel{display:none}.tab-panel.active{display:block}
+  /* Cards */
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:20px}
+  .kpi-card{background:#fff;border-radius:12px;padding:18px 20px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+  .kpi-label{font-size:11px;color:#64748B;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+  .kpi-value{font-size:20px;font-weight:700;color:#0F172A}
+  .kpi-sub{font-size:11px;color:#94A3B8;margin-top:4px}
+  .card{background:#fff;border-radius:12px;padding:20px 24px;margin-top:16px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+  .section-title{font-size:12px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px}
+  /* Progress bar */
+  .progress-wrap{margin-top:16px}
+  .progress-label{display:flex;justify-content:space-between;font-size:12px;color:#64748B;margin-bottom:6px}
+  .progress-bg{background:#F1F5F9;border-radius:8px;height:12px;overflow:hidden}
+  .progress-bar{height:100%;border-radius:8px;background:linear-gradient(90deg,#16A34A,#22C55E);transition:width .5s}
+  /* Category bars */
+  .cat-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .cat-badge{border-radius:6px;padding:2px 10px;font-size:11px;font-weight:600;min-width:170px;display:inline-block}
+  .cat-bar-bg{flex:1;background:#F1F5F9;border-radius:4px;height:8px;overflow:hidden}
+  .cat-bar{height:100%;border-radius:4px}
+  .cat-amount{font-size:12px;font-weight:600;color:#334155;min-width:130px;text-align:right}
+  /* Table */
+  .table-card{background:#fff;border-radius:12px;margin-top:16px;box-shadow:0 1px 4px rgba(0,0,0,.07);overflow:hidden}
+  .table-header{padding:14px 24px;border-bottom:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  .filters{display:flex;gap:6px;flex-wrap:wrap}
+  .filter-btn{padding:5px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid #E2E8F0;background:#fff;color:#64748B}
+  .filter-btn.active{border-color:#2563EB;background:#EFF6FF;color:#2563EB}
+  .tbl-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  thead tr{background:#F8FAFC}
+  th{padding:10px 14px;text-align:left;color:#64748B;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;border-bottom:1px solid #F1F5F9}
+  th.r,td.r{text-align:right}
+  td{padding:11px 14px;border-bottom:1px solid #F1F5F9}
+  .tr-even{background:#fff}.tr-odd{background:#FAFBFC}
+  tfoot tr{background:#F8FAFC;border-top:2px solid #E2E8F0}
+  tfoot td{font-weight:700;padding:11px 14px}
+  .badge{border-radius:6px;padding:3px 10px;font-size:11px;font-weight:600;white-space:nowrap}
+  .action-btn{background:none;border:1px solid #E2E8F0;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;color:#475569;margin-right:4px}
+  .del-btn{background:none;border:1px solid #FEE2E2;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;color:#DC2626}
+  .empty{text-align:center;padding:32px;color:#94A3B8;font-size:13px}
+  /* Modal */
+  .overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px}
+  .modal{background:#fff;border-radius:16px;width:100%;max-width:560px;max-height:90vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+  .modal-header{padding:18px 24px;border-bottom:1px solid #F1F5F9;display:flex;justify-content:space-between;align-items:center}
+  .modal-title{font-size:16px;font-weight:700;color:#0F172A}
+  .modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:#94A3B8}
+  .modal-body{padding:20px 24px;display:grid;gap:14px}
+  .modal-footer{padding:14px 24px;border-top:1px solid #F1F5F9;display:flex;gap:10px;justify-content:flex-end}
+  .field-label{font-size:11px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px}
+  .field-input{width:100%;border:1px solid #E2E8F0;border-radius:8px;padding:9px 12px;font-size:13px;color:#0F172A;outline:none;font-family:Arial,sans-serif}
+  .field-input:focus{border-color:#2563EB}
+  textarea.field-input{resize:vertical}
+  .btn-cancel{padding:9px 20px;border-radius:8px;border:1px solid #E2E8F0;background:#fff;color:#64748B;font-size:13px;font-weight:600;cursor:pointer}
+  .btn-save{padding:9px 20px;border-radius:8px;border:none;background:#2563EB;color:#fff;font-size:13px;font-weight:600;cursor:pointer}
+  .btn-save-green{padding:9px 20px;border-radius:8px;border:none;background:#16A34A;color:#fff;font-size:13px;font-weight:600;cursor:pointer}
+  .btn-delete{padding:9px 20px;border-radius:8px;border:none;background:#DC2626;color:#fff;font-size:13px;font-weight:600;cursor:pointer}
+  .hidden{display:none}
+  .comp-form-badge{background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:10px 14px;font-size:12px;color:#166534}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <div class="header-label">УОСЛАБ · Управлінський облік</div>
+      <h1 class="header-title">Реєстр витрат за Ріва-Сталь</h1>
+      <div class="header-sub">Витрати підлягають компенсації у формі знижок або R&D замовлень</div>
+    </div>
+    <div class="header-btns">
+      <button class="btn-pdf" onclick="printPDF()">📄 Зберегти PDF</button>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('expenses')">💸 Витрати</button>
+    <button class="tab" onclick="switchTab('compensations')">✅ Компенсації</button>
+    <button class="tab" onclick="switchTab('summary')">📊 Зведення</button>
+  </div>
+
+  <!-- TAB: Витрати -->
+  <div class="tab-panel active" id="tab-expenses">
+    <div class="kpi-grid" id="kpi-expenses"></div>
+    <div class="card" id="cat-card"></div>
+    <div class="table-card">
+      <div class="table-header">
+        <div style="font-size:12px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:1px">Витрати</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <div class="filters" id="filters-exp"></div>
+          <button class="btn-primary" onclick="openAddExpense()">+ Додати витрату</button>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>№</th><th>Дата</th><th>Категорія</th><th>Опис</th>
+            <th>Виконавець</th><th>Договір</th>
+            <th class="r">Без ПДВ</th><th class="r">ПДВ</th><th class="r">З ПДВ</th>
+            <th>Оплата</th><th>Компенсовано</th><th>Залишок</th><th></th>
+          </tr></thead>
+          <tbody id="tbody-exp"></tbody>
+          <tfoot id="tfoot-exp"></tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: Компенсації -->
+  <div class="tab-panel hidden" id="tab-compensations">
+    <div class="kpi-grid" id="kpi-comp"></div>
+    <div class="table-card" style="margin-top:16px">
+      <div class="table-header">
+        <div style="font-size:12px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:1px">Журнал компенсацій</div>
+        <button class="btn-save-green" onclick="openAddComp()">+ Додати компенсацію</button>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>№</th><th>Дата</th><th>Форма</th><th>Опис</th>
+            <th>Прив'язка</th><th class="r">Сума, грн</th><th>Статус</th><th>Дії</th><th></th>
+          </tr></thead>
+          <tbody id="tbody-comp"></tbody>
+          <tfoot id="tfoot-comp"></tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: Зведення -->
+  <div class="tab-panel hidden" id="tab-summary">
+    <div class="kpi-grid" id="kpi-summary"></div>
+    <div class="card" id="summary-progress"></div>
+    <div class="card" id="summary-by-expense"></div>
+  </div>
+</div>
+
+<!-- Modal: Витрата -->
+<div class="overlay hidden" id="modal-expense">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="exp-form-title">Додати витрату</h2>
+      <button class="modal-close" onclick="closeExpModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div><label class="field-label">Дата документа *</label><input class="field-input" type="date" id="ef-date"></div>
+      <div><label class="field-label">Виконавець *</label><input class="field-input" type="text" id="ef-contractor"></div>
+      <div><label class="field-label">№ договору / рахунку</label><input class="field-input" type="text" id="ef-docRef"></div>
+      <div><label class="field-label">Опис *</label><textarea class="field-input" id="ef-description" rows="3"></textarea></div>
+      <div><label class="field-label">Категорія</label>
+        <select class="field-input" id="ef-category">
+          <option>Сертифікація</option><option>Випробування</option><option>Технічна документація</option>
+          <option>Реєстрація / Дозволи</option><option>Маркетинг продукту</option><option>R&D / Розробка</option>
+          <option>Логістика</option><option>Юридичні послуги</option><option>Інше</option>
+        </select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div><label class="field-label">Сума без ПДВ *</label><input class="field-input" type="number" id="ef-amountExVat"></div>
+        <div><label class="field-label">ПДВ</label><input class="field-input" type="number" id="ef-vat"></div>
+      </div>
+      <div><label class="field-label">Статус оплати</label>
+        <select class="field-input" id="ef-paymentStatus">
+          <option>Очікує оплати</option><option>Передоплата 70%</option><option>Оплачено повністю</option><option>Частково оплачено</option>
+        </select>
+      </div>
+      <div><label class="field-label">Примітки</label><input class="field-input" type="text" id="ef-notes"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeExpModal()">Скасувати</button>
+      <button class="btn-save" onclick="saveExpense()">Зберегти</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Компенсація -->
+<div class="overlay hidden" id="modal-comp">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="comp-form-title">Додати компенсацію</h2>
+      <button class="modal-close" onclick="closeCompModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="comp-form-badge">💡 Компенсація може покривати одну або кілька витрат частково або повністю</div>
+      <div><label class="field-label">Дата *</label><input class="field-input" type="date" id="cf-date"></div>
+      <div><label class="field-label">Форма компенсації</label>
+        <select class="field-input" id="cf-type">
+          <option>Знижка на закупівлю</option><option>R&D замовлення</option>
+          <option>Пряме повернення коштів</option><option>Залік у рахунок майбутніх поставок</option><option>Інше</option>
+        </select>
+      </div>
+      <div><label class="field-label">Очікувана дата компенсації</label><input class="field-input" type="date" id="cf-expectedDate"></div>
+      <div><label class="field-label">Сума компенсації, грн *</label><input class="field-input" type="number" id="cf-amount" placeholder="0.00"></div>
+      <div><label class="field-label">Прив'язка до витрати</label>
+        <select class="field-input" id="cf-expenseId">
+          <option value="">— Загальна (без прив'язки) —</option>
+        </select>
+      </div>
+      <div><label class="field-label">Опис</label><input class="field-input" type="text" id="cf-description"></div>
+      <div><label class="field-label">Примітки</label><input class="field-input" type="text" id="cf-notes"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeCompModal()">Скасувати</button>
+      <button class="btn-save-green" onclick="saveComp()">Зберегти компенсацію</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirm -->
+<div class="overlay hidden" id="modal-delete">
+  <div class="modal" style="max-width:340px">
+    <div style="text-align:center;padding:28px">
+      <div style="font-size:32px;margin-bottom:12px">🗑</div>
+      <h3 style="margin-bottom:8px;color:#0F172A">Видалити запис?</h3>
+      <p style="color:#64748B;font-size:13px;margin-bottom:20px">Цю дію не можна скасувати.</p>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <button class="btn-cancel" onclick="closeDelete()">Скасувати</button>
+        <button class="btn-delete" onclick="confirmDelete()">Видалити</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const CAT_COLORS={
+  "Сертифікація":{bg:"#EEF2FF",text:"#4338CA",bar:"#6366F1"},
+  "Випробування":{bg:"#FFF7ED",text:"#C2410C",bar:"#F97316"},
+  "Технічна документація":{bg:"#F0FDF4",text:"#166534",bar:"#22C55E"},
+  "Реєстрація / Дозволи":{bg:"#FDF4FF",text:"#7E22CE",bar:"#A855F7"},
+  "Маркетинг продукту":{bg:"#FFF1F2",text:"#BE123C",bar:"#F43F5E"},
+  "R&D / Розробка":{bg:"#ECFEFF",text:"#0E7490",bar:"#06B6D4"},
+  "Логістика":{bg:"#FFFBEB",text:"#92400E",bar:"#F59E0B"},
+  "Юридичні послуги":{bg:"#F0F9FF",text:"#075985",bar:"#0EA5E9"},
+  "Інше":{bg:"#F8FAFC",text:"#475569",bar:"#94A3B8"},
+};
+
+let expenses = JSON.parse(localStorage.getItem('uoslab_expenses')||'null') || [{
+  id:1,date:"2026-06-26",category:"Сертифікація",
+  description:"Оцінка відповідності Директиві 2014/68/EU (Модуль В), реактори RVD-3 (1–5 л, 200 бар)",
+  contractor:"ТОВ «ТЕСКО»",docRef:"01-2026-СЄ",
+  amountExVat:258250,vat:51650,
+  paymentStatus:"Передоплата 70%",notes:""
+}];
+
+let compensations = JSON.parse(localStorage.getItem('uoslab_comps')||'null') || [];
+
+let activeTab="expenses", expFilter="all", editExpId=null, editCompId=null, deleteTarget=null;
+
+const persist=()=>{
+  localStorage.setItem('uoslab_expenses',JSON.stringify(expenses));
+  localStorage.setItem('uoslab_comps',JSON.stringify(compensations));
+};
+
+const fmt=n=>n==null||n===""?"—":Number(n).toLocaleString("uk-UA",{minimumFractionDigits:2,maximumFractionDigits:2})+" ₴";
+const fmtD=d=>d?d.split("-").reverse().join("."):"—";
+const n=v=>Number(v||0);
+
+const totalExp=()=>expenses.reduce((s,r)=>s+n(r.amountExVat)+n(r.vat),0);
+const totalComp=()=>compensations.reduce((s,c)=>s+n(c.amount),0);
+const compForExp=id=>compensations.filter(c=>c.expenseId==id).reduce((s,c)=>s+n(c.amount),0);
+const payColor=s=>s==="Оплачено повністю"?"#16A34A":s==="Передоплата 70%"?"#D97706":s==="Очікує оплати"?"#DC2626":"#6B7280";
+
+function switchTab(t){
+  activeTab=t;
+  ["expenses","compensations","summary"].forEach(x=>{
+    document.getElementById("tab-"+x).className="tab-panel"+(x===t?" active":" hidden");
+  });
+  document.querySelectorAll(".tab").forEach((b,i)=>{
+    b.className="tab"+([["expenses"],["compensations"],["summary"]][i][0]===t?" active":"");
+  });
+  render();
+}
+
+function render(){
+  if(activeTab==="expenses"){renderExpenses();}
+  else if(activeTab==="compensations"){renderCompensations();}
+  else{renderSummary();}
+}
+
+// ── EXPENSES ──────────────────────────────────────────────────────────────
+function renderExpenses(){
+  const te=expenses.reduce((s,r)=>s+n(r.amountExVat),0);
+  const tv=expenses.reduce((s,r)=>s+n(r.vat),0);
+  const ti=te+tv;
+  const tc=totalComp();
+  const tp=Math.max(0,ti-tc);
+  document.getElementById("kpi-expenses").innerHTML=[
+    {label:"Загальна сума витрат",value:fmt(ti),sub:`без ПДВ: ${fmt(te)}`,accent:"#2563EB"},
+    {label:"ПДВ",value:fmt(tv),sub:`${expenses.length} записів`,accent:"#7C3AED"},
+    {label:"Компенсовано",value:fmt(tc),sub:ti>0?`${Math.round(Math.min(tc/ti,1)*100)}% від суми`:"—",accent:"#16A34A"},
+    {label:"Залишок",value:fmt(tp),sub:tp<=0?"повністю закрито":"очікується від Ріва",accent:"#DC2626"},
+  ].map(k=>`<div class="kpi-card" style="border-top:3px solid ${k.accent}">
+    <div class="kpi-label">${k.label}</div>
+    <div class="kpi-value">${k.value}</div>
+    <div class="kpi-sub">${k.sub}</div>
+  </div>`).join("");
+
+  // cats
+  const map={};
+  expenses.forEach(r=>{map[r.category]=(map[r.category]||0)+n(r.amountExVat)+n(r.vat);});
+  const sorted=Object.entries(map).sort((a,b)=>b[1]-a[1]);
+  const max=sorted[0]?.[1]||1;
+  document.getElementById("cat-card").innerHTML=sorted.length?`<div class="section-title">Розподіл за категоріями</div>`+
+    sorted.map(([cat,sum])=>{const c=CAT_COLORS[cat]||CAT_COLORS["Інше"];return`<div class="cat-row">
+      <span class="cat-badge" style="background:${c.bg};color:${c.text}">${cat}</span>
+      <div class="cat-bar-bg"><div class="cat-bar" style="width:${Math.round(sum/max*100)}%;background:${c.bar}"></div></div>
+      <span class="cat-amount">${fmt(sum)}</span></div>`;}).join(""):"";
+
+  // filters
+  const filters=[["all","Усі"],["partial","Частково компенсовано"],["full","Повністю компенсовано"],["none","Без компенсації"]];
+  document.getElementById("filters-exp").innerHTML=filters.map(([v,l])=>
+    `<button class="filter-btn${expFilter===v?" active":""}" onclick="setExpFilter('${v}')">${l}</button>`).join("");
+
+  // table
+  let filtered=expenses;
+  if(expFilter==="none") filtered=expenses.filter(r=>{const c=compForExp(r.id);return c===0;});
+  else if(expFilter==="partial") filtered=expenses.filter(r=>{const c=compForExp(r.id);const t=n(r.amountExVat)+n(r.vat);return c>0&&c<t;});
+  else if(expFilter==="full") filtered=expenses.filter(r=>{const c=compForExp(r.id);const t=n(r.amountExVat)+n(r.vat);return c>=t;});
+
+  if(!filtered.length){
+    document.getElementById("tbody-exp").innerHTML=`<tr><td colspan="13" class="empty">Немає записів</td></tr>`;
+    document.getElementById("tfoot-exp").innerHTML="";return;
+  }
+  document.getElementById("tbody-exp").innerHTML=filtered.map((r,i)=>{
+    const c=CAT_COLORS[r.category]||CAT_COLORS["Інше"];
+    const total=n(r.amountExVat)+n(r.vat);
+    const comp=compForExp(r.id);
+    const rest=Math.max(0,total-comp);
+    const compColor=comp>=total?"#16A34A":comp>0?"#D97706":"#94A3B8";
+    return`<tr class="${i%2===0?"tr-even":"tr-odd"}">
+      <td style="color:#94A3B8;font-size:11px">${r.id}</td>
+      <td style="white-space:nowrap;color:#475569">${fmtD(r.date)}</td>
+      <td><span class="badge" style="background:${c.bg};color:${c.text}">${r.category}</span></td>
+      <td style="color:#334155;max-width:200px;font-size:12px">${r.description}</td>
+      <td style="white-space:nowrap;color:#475569;font-size:12px">${r.contractor}</td>
+      <td style="color:#64748B;font-size:11px">${r.docRef||"—"}</td>
+      <td class="r" style="color:#334155">${fmt(r.amountExVat)}</td>
+      <td class="r" style="color:#64748B">${fmt(r.vat)}</td>
+      <td class="r" style="font-weight:700">${fmt(total)}</td>
+      <td><span style="color:${payColor(r.paymentStatus)};font-size:11px;font-weight:600">${r.paymentStatus}</span></td>
+      <td class="r" style="color:${compColor};font-weight:600">${fmt(comp)}</td>
+      <td class="r" style="color:${rest>0?"#DC2626":"#16A34A"};font-weight:600">${fmt(rest)}</td>
+      <td style="white-space:nowrap">
+        <button class="action-btn" onclick="openEditExpense(${r.id})">Ред.</button>
+        <button class="del-btn" onclick="openDelete('exp',${r.id})">×</button>
+      </td></tr>`;
+  }).join("");
+
+  const sEx=filtered.reduce((s,r)=>s+n(r.amountExVat),0);
+  const sV=filtered.reduce((s,r)=>s+n(r.vat),0);
+  const sT=sEx+sV;
+  const sC=filtered.reduce((s,r)=>s+compForExp(r.id),0);
+  const sR=Math.max(0,sT-sC);
+  document.getElementById("tfoot-exp").innerHTML=`<tr>
+    <td colspan="6" style="font-size:12px">РАЗОМ</td>
+    <td class="r">${fmt(sEx)}</td><td class="r">${fmt(sV)}</td><td class="r" style="font-size:14px">${fmt(sT)}</td>
+    <td></td><td class="r" style="color:#16A34A">${fmt(sC)}</td><td class="r" style="color:#DC2626">${fmt(sR)}</td><td></td></tr>`;
+}
+function setExpFilter(f){expFilter=f;render();}
+
+// ── COMPENSATIONS ─────────────────────────────────────────────────────────
+function renderCompensations(){
+  const tc=totalComp();
+  const ti=totalExp();
+  document.getElementById("kpi-comp").innerHTML=[
+    {label:"Всього компенсацій",value:compensations.length+"",sub:"записів у журналі",accent:"#16A34A"},
+    {label:"Сума компенсацій",value:fmt(tc),sub:`з ${fmt(ti)} витрат`,accent:"#2563EB"},
+    {label:"Залишок",value:fmt(Math.max(0,ti-tc)),sub:tc>=ti?"повністю закрито":"очікується",accent:"#DC2626"},
+    {label:"Покриття",value:ti>0?Math.round(Math.min(tc/ti,1)*100)+"%":"—",sub:"від загальних витрат",accent:"#7C3AED"},
+  ].map(k=>`<div class="kpi-card" style="border-top:3px solid ${k.accent}">
+    <div class="kpi-label">${k.label}</div>
+    <div class="kpi-value">${k.value}</div>
+    <div class="kpi-sub">${k.sub}</div>
+  </div>`).join("");
+
+  if(!compensations.length){
+    document.getElementById("tbody-comp").innerHTML=`<tr><td colspan="8" class="empty">Компенсацій ще немає — додайте першу</td></tr>`;
+    document.getElementById("tfoot-comp").innerHTML="";return;
+  }
+  document.getElementById("tbody-comp").innerHTML=compensations.map((c,i)=>{
+    const exp=expenses.find(e=>e.id==c.expenseId);
+    const expLabel=exp?`${exp.contractor} / ${exp.docRef||exp.category}`:"Загальна";
+    const st=c.status||"pending";
+    const statusBadge={
+      pending:`<span style="background:#FFF7ED;color:#C2410C;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600">🟡 Очікує запиту</span>`,
+      sent:`<span style="background:#EFF6FF;color:#1D4ED8;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600">📤 Запит надіслано</span>`,
+      confirmed:`<span style="background:#F0FDF4;color:#15803D;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600">✅ Ріва підтвердила</span>`,
+      done:`<span style="background:#DCFCE7;color:#166534;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600">💚 Отримано</span>`,
+    }[st]||"";
+    const workflowBtn=
+      st==="pending"?`<button class="action-btn" style="color:#1D4ED8;border-color:#BFDBFE" onclick="sendRequest(${c.id})">📤 Надіслати Ріві</button>`:
+      st==="sent"?`<button class="action-btn" style="color:#15803D;border-color:#BBF7D0" onclick="markConfirmed(${c.id})">✅ Ріва підтвердила</button>`:
+      st==="confirmed"?`<button class="action-btn" style="color:#166534;border-color:#86EFAC" onclick="markDone(${c.id})">💚 Отримано</button>`:"";
+    return`<tr class="${i%2===0?"tr-even":"tr-odd"}">
+      <td style="color:#94A3B8;font-size:11px">${c.id}</td>
+      <td style="white-space:nowrap">${fmtD(c.date)}</td>
+      <td><span class="badge" style="background:#F0FDF4;color:#166534">${c.type}</span></td>
+      <td style="font-size:12px;color:#334155">${c.description||"—"}</td>
+      <td style="font-size:12px;color:#64748B">${expLabel}</td>
+      <td class="r" style="font-weight:700;color:#16A34A">${fmt(c.amount)}</td>
+      <td>${statusBadge}</td>
+      <td style="white-space:nowrap">${workflowBtn}</td>
+      <td style="white-space:nowrap">
+        <button class="action-btn" onclick="openEditComp(${c.id})">Ред.</button>
+        <button class="del-btn" onclick="openDelete('comp',${c.id})">×</button>
+      </td></tr>`;
+  }).join("");
+  document.getElementById("tfoot-comp").innerHTML=`<tr>
+    <td colspan="5" style="font-size:12px">РАЗОМ</td>
+    <td class="r" style="color:#16A34A;font-size:14px">${fmt(tc)}</td><td colspan="2"></td></tr>`;
+}
+
+// ── SUMMARY ───────────────────────────────────────────────────────────────
+function renderSummary(){
+  const ti=totalExp(),tc=totalComp(),tr2=Math.max(0,ti-tc);
+  const pct=ti>0?Math.min(tc/ti,1)*100:0;
+  document.getElementById("kpi-summary").innerHTML=[
+    {label:"Загальні витрати",value:fmt(ti),sub:`${expenses.length} записів`,accent:"#2563EB"},
+    {label:"Компенсовано",value:fmt(tc),sub:`${compensations.length} виплат`,accent:"#16A34A"},
+    {label:"Залишок",value:fmt(tr2),sub:tr2<=0?"✅ Повністю закрито":"очікується від Ріва",accent:tr2<=0?"#16A34A":"#DC2626"},
+    {label:"Прогрес",value:Math.round(pct)+"%",sub:"покриття витрат",accent:"#7C3AED"},
+  ].map(k=>`<div class="kpi-card" style="border-top:3px solid ${k.accent}">
+    <div class="kpi-label">${k.label}</div>
+    <div class="kpi-value">${k.value}</div>
+    <div class="kpi-sub">${k.sub}</div>
+  </div>`).join("");
+
+  document.getElementById("summary-progress").innerHTML=`
+    <div class="section-title">Прогрес компенсації</div>
+    <div class="progress-wrap">
+      <div class="progress-label"><span>Компенсовано: ${fmt(tc)}</span><span>Залишок: ${fmt(tr2)}</span></div>
+      <div class="progress-bg"><div class="progress-bar" style="width:${pct}%"></div></div>
+      <div style="text-align:center;font-size:12px;color:#64748B;margin-top:8px">${Math.round(pct)}% від ${fmt(ti)}</div>
+    </div>`;
+
+  // by expense breakdown
+  document.getElementById("summary-by-expense").innerHTML=`
+    <div class="section-title">Статус по кожній витраті</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead><tr style="background:#F8FAFC">
+        <th style="padding:8px 12px;text-align:left;color:#64748B;font-size:11px;text-transform:uppercase">Витрата</th>
+        <th style="padding:8px 12px;text-align:right;color:#64748B;font-size:11px;text-transform:uppercase">Сума</th>
+        <th style="padding:8px 12px;text-align:right;color:#64748B;font-size:11px;text-transform:uppercase">Компенсовано</th>
+        <th style="padding:8px 12px;text-align:right;color:#64748B;font-size:11px;text-transform:uppercase">Залишок</th>
+        <th style="padding:8px 12px;text-align:left;color:#64748B;font-size:11px;text-transform:uppercase">Прогрес</th>
+      </tr></thead>
+      <tbody>${expenses.map((r,i)=>{
+        const total=n(r.amountExVat)+n(r.vat);
+        const comp=compForExp(r.id);
+        const rest=Math.max(0,total-comp);
+        const p=total>0?Math.min(comp/total,1)*100:0;
+        const color=p>=100?"#16A34A":p>0?"#D97706":"#94A3B8";
+        return`<tr style="border-bottom:1px solid #F1F5F9;background:${i%2===0?"#fff":"#FAFBFC"}">
+          <td style="padding:10px 12px">
+            <div style="font-weight:600;color:#334155">${r.contractor}</div>
+            <div style="font-size:11px;color:#64748B">${r.docRef||r.category}</div>
+          </td>
+          <td style="padding:10px 12px;text-align:right;font-weight:600">${fmt(total)}</td>
+          <td style="padding:10px 12px;text-align:right;color:${color};font-weight:600">${fmt(comp)}</td>
+          <td style="padding:10px 12px;text-align:right;color:${rest>0?"#DC2626":"#16A34A"};font-weight:600">${fmt(rest)}</td>
+          <td style="padding:10px 12px">
+            <div style="background:#F1F5F9;border-radius:4px;height:6px;overflow:hidden;min-width:80px">
+              <div style="width:${p}%;height:100%;background:${color};border-radius:4px"></div>
+            </div>
+            <div style="font-size:10px;color:#94A3B8;margin-top:2px">${Math.round(p)}%</div>
+          </td>
+        </tr>`;
+      }).join("")}</tbody>
+    </table>`;
+}
+
+// ── EXPENSE FORM ──────────────────────────────────────────────────────────
+function openAddExpense(){
+  editExpId=null;
+  document.getElementById("exp-form-title").textContent="Додати витрату";
+  ["ef-date","ef-contractor","ef-docRef","ef-description","ef-notes"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("ef-amountExVat").value="";
+  document.getElementById("ef-vat").value="";
+  document.getElementById("ef-category").value="Сертифікація";
+  document.getElementById("ef-paymentStatus").value="Очікує оплати";
+  document.getElementById("modal-expense").classList.remove("hidden");
+}
+function openEditExpense(id){
+  const r=expenses.find(x=>x.id===id);if(!r)return;
+  editExpId=id;
+  document.getElementById("exp-form-title").textContent="Редагувати витрату";
+  document.getElementById("ef-date").value=r.date||"";
+  document.getElementById("ef-contractor").value=r.contractor||"";
+  document.getElementById("ef-docRef").value=r.docRef||"";
+  document.getElementById("ef-description").value=r.description||"";
+  document.getElementById("ef-category").value=r.category||"Сертифікація";
+  document.getElementById("ef-amountExVat").value=r.amountExVat||"";
+  document.getElementById("ef-vat").value=r.vat||"";
+  document.getElementById("ef-paymentStatus").value=r.paymentStatus||"Очікує оплати";
+  document.getElementById("ef-notes").value=r.notes||"";
+  document.getElementById("modal-expense").classList.remove("hidden");
+}
+function closeExpModal(){document.getElementById("modal-expense").classList.add("hidden");}
+function saveExpense(){
+  const date=document.getElementById("ef-date").value;
+  const contractor=document.getElementById("ef-contractor").value.trim();
+  const description=document.getElementById("ef-description").value.trim();
+  if(!date||!contractor||!description){alert("Заповніть обов'язкові поля (*)");return;}
+  const entry={date,contractor,description,
+    docRef:document.getElementById("ef-docRef").value.trim(),
+    category:document.getElementById("ef-category").value,
+    amountExVat:n(document.getElementById("ef-amountExVat").value),
+    vat:n(document.getElementById("ef-vat").value),
+    paymentStatus:document.getElementById("ef-paymentStatus").value,
+    notes:document.getElementById("ef-notes").value.trim()};
+  if(editExpId){expenses=expenses.map(r=>r.id===editExpId?{...entry,id:editExpId}:r);}
+  else{entry.id=Date.now();expenses=[...expenses,entry];}
+  closeExpModal();persist();render();
+}
+
+// ── COMP FORM ─────────────────────────────────────────────────────────────
+function populateExpSelect(selectedId){
+  const sel=document.getElementById("cf-expenseId");
+  sel.innerHTML=`<option value="">— Загальна (без прив'язки) —</option>`+
+    expenses.map(r=>`<option value="${r.id}"${r.id==selectedId?" selected":""}>${r.contractor} / ${r.docRef||r.category} (${fmt(n(r.amountExVat)+n(r.vat))})</option>`).join("");
+}
+function openAddComp(){
+  editCompId=null;
+  document.getElementById("comp-form-title").textContent="Додати компенсацію";
+  document.getElementById("cf-date").value="";
+  document.getElementById("cf-amount").value="";
+  document.getElementById("cf-description").value="";
+  document.getElementById("cf-notes").value="";
+  document.getElementById("cf-expectedDate").value="";
+  document.getElementById("cf-type").value="Знижка на закупівлю";
+  populateExpSelect("");
+  document.getElementById("modal-comp").classList.remove("hidden");
+}
+function openEditComp(id){
+  const c=compensations.find(x=>x.id===id);if(!c)return;
+  editCompId=id;
+  document.getElementById("comp-form-title").textContent="Редагувати компенсацію";
+  document.getElementById("cf-date").value=c.date||"";
+  document.getElementById("cf-amount").value=c.amount||"";
+  document.getElementById("cf-description").value=c.description||"";
+  document.getElementById("cf-notes").value=c.notes||"";
+  document.getElementById("cf-type").value=c.type||"Знижка на закупівлю";
+  document.getElementById("cf-expectedDate").value=c.expectedDate||"";
+  populateExpSelect(c.expenseId);
+  document.getElementById("modal-comp").classList.remove("hidden");
+}
+function closeCompModal(){document.getElementById("modal-comp").classList.add("hidden");}
+function saveComp(){
+  const date=document.getElementById("cf-date").value;
+  const amount=n(document.getElementById("cf-amount").value);
+  if(!date||!amount){alert("Заповніть дату та суму");return;}
+  const existing=editCompId?compensations.find(c=>c.id===editCompId):null;
+  const entry={date,amount,
+    type:document.getElementById("cf-type").value,
+    expenseId:document.getElementById("cf-expenseId").value||"",
+    description:document.getElementById("cf-description").value.trim(),
+    notes:document.getElementById("cf-notes").value.trim(),
+    expectedDate:document.getElementById("cf-expectedDate").value||"",
+    status:existing?existing.status:"pending"};
+  if(editCompId){compensations=compensations.map(c=>c.id===editCompId?{...entry,id:editCompId}:c);}
+  else{entry.id=Date.now();compensations=[...compensations,entry];}
+  closeCompModal();persist();render();
+}
+
+// ── DELETE ────────────────────────────────────────────────────────────────
+function openDelete(type,id){deleteTarget={type,id};document.getElementById("modal-delete").classList.remove("hidden");}
+function closeDelete(){document.getElementById("modal-delete").classList.add("hidden");}
+function confirmDelete(){
+  if(deleteTarget.type==="exp") expenses=expenses.filter(r=>r.id!==deleteTarget.id);
+  else compensations=compensations.filter(c=>c.id!==deleteTarget.id);
+  closeDelete();persist();render();
+}
+
+// ── PDF ───────────────────────────────────────────────────────────────────
+function printPDF(){
+  const ti=totalExp(),tc=totalComp(),tr2=Math.max(0,ti-tc);
+  const w=window.open("","_blank");
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Реєстр УОСЛАБ</title><style>
+    body{font-family:Arial,sans-serif;margin:28px;color:#0f172a;font-size:11px}
+    h1{color:#1e3a5f;font-size:17px;margin-bottom:3px}h2{color:#1e3a5f;font-size:13px;margin:20px 0 8px}
+    .sub{color:#64748b;font-size:10px;margin-bottom:16px}
+    .kpi{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+    .kpi-card{border:1px solid #e2e8f0;border-radius:6px;padding:8px 12px;min-width:130px}
+    .kpi-label{font-size:8px;color:#64748b;text-transform:uppercase;letter-spacing:1px}
+    .kpi-value{font-size:15px;font-weight:700;margin-top:2px}
+    .pb{background:#f1f5f9;border-radius:6px;height:10px;margin:8px 0}
+    .pb-inner{height:100%;border-radius:6px;background:linear-gradient(90deg,#16A34A,#22C55E)}
+    table{width:100%;border-collapse:collapse;font-size:10px;margin-bottom:16px}
+    th{background:#1e3a5f;color:#fff;padding:5px 7px;text-align:left}th.r{text-align:right}
+    td{padding:4px 7px;border-bottom:1px solid #f1f5f9}td.r{text-align:right}
+    .even{background:#f8fafc}.total-row td{background:#1e3a5f;color:#fff;font-weight:700;padding:5px 7px}
+    @media print{.no-print{display:none}}
+  </style></head><body>
+  <div class="no-print" style="margin-bottom:14px">
+    <button onclick="window.print()" style="background:#1e3a5f;color:#fff;border:none;padding:7px 16px;border-radius:6px;font-size:11px;cursor:pointer">🖨 Друк / Зберегти PDF</button>
+  </div>
+  <h1>Реєстр витрат УОСЛАБ за Ріва-Сталь</h1>
+  <div class="sub">Станом на ${new Date().toLocaleDateString("uk-UA")}</div>
+  <div class="kpi">
+    <div class="kpi-card"><div class="kpi-label">Загальні витрати</div><div class="kpi-value">${fmt(ti)}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Компенсовано</div><div class="kpi-value" style="color:#16A34A">${fmt(tc)}</div></div>
+    <div class="kpi-card" style="border-color:#fca5a5"><div class="kpi-label">Залишок</div><div class="kpi-value" style="color:#dc2626">${fmt(tr2)}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Покриття</div><div class="kpi-value">${ti>0?Math.round(Math.min(tc/ti,1)*100):0}%</div></div>
+  </div>
+  <div class="pb"><div class="pb-inner" style="width:${ti>0?Math.min(tc/ti,1)*100:0}%"></div></div>
+  <h2>Витрати</h2>
+  <table><thead><tr><th>Дата</th><th>Категорія</th><th>Опис</th><th>Виконавець</th><th class="r">З ПДВ</th><th class="r">Компенс.</th><th class="r">Залишок</th><th>Оплата</th></tr></thead>
+  <tbody>${expenses.map((r,i)=>{const t=n(r.amountExVat)+n(r.vat);const c=compForExp(r.id);return`<tr class="${i%2===1?"even":""}"><td>${fmtD(r.date)}</td><td>${r.category}</td><td>${r.description}</td><td>${r.contractor}</td><td class="r"><b>${fmt(t)}</b></td><td class="r" style="color:#16A34A">${fmt(c)}</td><td class="r" style="color:#dc2626">${fmt(Math.max(0,t-c))}</td><td>${r.paymentStatus}</td></tr>`;}).join("")}</tbody>
+  <tfoot><tr><td colspan="4" class="total-row">РАЗОМ</td><td class="r total-row">${fmt(ti)}</td><td class="r total-row" style="color:#86efac">${fmt(tc)}</td><td class="r total-row" style="color:#fca5a5">${fmt(tr2)}</td><td class="total-row"></td></tr></tfoot></table>
+  ${compensations.length?`<h2>Журнал компенсацій</h2>
+  <table><thead><tr><th>Дата</th><th>Форма</th><th>Опис</th><th>Прив'язка</th><th class="r">Сума</th></tr></thead>
+  <tbody>${compensations.map((c,i)=>{const exp=expenses.find(e=>e.id==c.expenseId);return`<tr class="${i%2===1?"even":""}"><td>${fmtD(c.date)}</td><td>${c.type}</td><td>${c.description||"—"}</td><td>${exp?exp.contractor+" / "+(exp.docRef||exp.category):"Загальна"}</td><td class="r" style="color:#16A34A;font-weight:700">${fmt(c.amount)}</td></tr>`;}).join("")}</tbody>
+  <tfoot><tr><td colspan="4" class="total-row">РАЗОМ КОМПЕНСАЦІЙ</td><td class="r total-row" style="color:#86efac">${fmt(tc)}</td></tr></tfoot></table>`:""}
+  </body></html>`);
+  w.document.close();
+}
+
+// ── WORKFLOW ──────────────────────────────────────────────────────────────
+const UOSLAB_EMAIL = "llc@uoslab.com";
+const RIVA_EMAILS  = "y.lytvynenko@riva-steel.com,d.dovgopoliy@uoslab.com";
+
+function buildConfirmLink(compId){
+  const c=compensations.find(x=>x.id===compId);if(!c)return"";
+  const exp=expenses.find(e=>e.id==c.expenseId);
+  const data=btoa(encodeURIComponent(JSON.stringify({
+    compId:c.id, amount:c.amount, type:c.type,
+    description:c.description, date:c.date,
+    expLabel:exp?`${exp.contractor} / ${exp.docRef||exp.category}`:"Загальна",
+    uoslabEmail:UOSLAB_EMAIL
+  })));
+  return`confirm.html?d=${data}`;
+}
+
+function sendRequest(compId){
+  const c=compensations.find(x=>x.id===compId);if(!c)return;
+  const exp=expenses.find(e=>e.id==c.expenseId);
+  const expLabel=exp?`${exp.contractor} / ${exp.docRef||exp.category}`:"Загальна";
+  const link=buildConfirmLink(compId);
+  const subject=encodeURIComponent(`Запит на компенсацію витрат УОСЛАБ — ${fmt(c.amount)}`);
+  const body=encodeURIComponent(
+`Шановний партнер,
+
+УОСЛАБ направляє запит на компенсацію понесених витрат:
+
+Витрата: ${expLabel}
+Форма компенсації: ${c.type}
+Сума: ${fmt(c.amount)}
+Опис: ${c.description||"—"}
+Очікувана дата: ${c.expectedDate?fmtD(c.expectedDate):"—"}
+
+Для підтвердження компенсації, будь ласка, перейдіть за посиланням:
+${window.location.origin}${window.location.pathname.replace('uoslab-registry.html','')}${link}
+
+З повагою,
+ТОВ УОСЛАБ
+${UOSLAB_EMAIL}`);
+  window.open(`mailto:${RIVA_EMAILS}?subject=${subject}&body=${body}`,"_blank");
+  compensations=compensations.map(x=>x.id===compId?{...x,status:"sent",sentDate:new Date().toISOString().slice(0,10)}:x);
+  persist();render();
+}
+
+function markConfirmed(compId){
+  if(!confirm("Підтвердити що Ріва погодила цю компенсацію?"))return;
+  compensations=compensations.map(x=>x.id===compId?{...x,status:"confirmed",confirmedDate:new Date().toISOString().slice(0,10)}:x);
+  // notify Riva that we recorded confirmation
+  const c=compensations.find(x=>x.id===compId);
+  const subject=encodeURIComponent(`Підтвердження отримано — компенсація ${fmt(c.amount)}`);
+  const body=encodeURIComponent(`Дякуємо за підтвердження компенсації на суму ${fmt(c.amount)}.
+
+Очікуємо фактичного надходження.
+
+ТОВ УОСЛАБ`);
+  window.open(`mailto:${RIVA_EMAILS}?subject=${subject}&body=${body}`,"_blank");
+  persist();render();
+}
+
+function markDone(compId){
+  if(!confirm("Підтвердити що компенсацію фактично отримано?"))return;
+  compensations=compensations.map(x=>x.id===compId?{...x,status:"done",doneDate:new Date().toISOString().slice(0,10)}:x);
+  persist();render();
+}
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Підтвердження компенсації · УОСЛАБ</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Arial,sans-serif;background:#F1F5F9;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .card{background:#fff;border-radius:16px;padding:40px;max-width:520px;width:100%;box-shadow:0 4px 24px rgba(0,0,0,.1)}
+  .logo{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#64748B;margin-bottom:24px}
+  .logo span{color:#2563EB}
+  h1{font-size:20px;font-weight:700;color:#0F172A;margin-bottom:8px}
+  .sub{font-size:13px;color:#64748B;margin-bottom:28px;line-height:1.5}
+  .info-block{background:#F8FAFC;border-radius:10px;padding:16px 20px;margin-bottom:24px}
+  .info-row{display:flex;justify-content:space-between;align-items:flex-start;padding:6px 0;border-bottom:1px solid #F1F5F9;font-size:13px;gap:12px}
+  .info-row:last-child{border-bottom:none}
+  .info-label{color:#64748B;font-size:12px;flex-shrink:0}
+  .info-value{color:#0F172A;font-weight:600;text-align:right}
+  .amount{font-size:28px;font-weight:800;color:#16A34A;text-align:center;margin:20px 0;letter-spacing:-1px}
+  .btn-confirm{width:100%;background:linear-gradient(135deg,#16A34A,#22C55E);color:#fff;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px}
+  .btn-confirm:hover{opacity:.95}
+  .btn-decline{width:100%;background:#fff;color:#DC2626;border:1px solid #FEE2E2;border-radius:10px;padding:12px;font-size:13px;font-weight:600;cursor:pointer}
+  .footer{font-size:11px;color:#94A3B8;text-align:center;margin-top:20px;line-height:1.6}
+  .success{text-align:center;padding:20px 0}
+  .success-icon{font-size:56px;margin-bottom:16px}
+  .success-title{font-size:20px;font-weight:700;color:#16A34A;margin-bottom:8px}
+  .success-sub{font-size:13px;color:#64748B;line-height:1.6}
+  .error{text-align:center;padding:20px 0;color:#DC2626}
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <div class="logo"><span>УОСЛАБ</span> · Запит компенсації</div>
+  <div id="content"><p style="color:#94A3B8;font-size:13px">Завантаження...</p></div>
+</div>
+
+<script>
+const fmt = n => Number(n).toLocaleString("uk-UA",{minimumFractionDigits:2,maximumFractionDigits:2}) + " ₴";
+const fmtD = d => d ? d.split("-").reverse().join(".") : "—";
+
+function getParams(){
+  try{
+    const raw = new URLSearchParams(window.location.search).get("d");
+    if(!raw) return null;
+    return JSON.parse(decodeURIComponent(atob(raw)));
+  }catch(e){return null;}
+}
+
+function confirmComp(data){
+  const subject = encodeURIComponent(`✅ Підтверджую компенсацію ${fmt(data.amount)} — ${data.type}`);
+  const body = encodeURIComponent(
+`Вітаю,
+
+Цим листом підтверджую компенсацію витрат УОСЛАБ:
+
+Витрата: ${data.expLabel}
+Форма: ${data.type}
+Сума: ${fmt(data.amount)}
+Опис: ${data.description||"—"}
+
+Компенсацію буде здійснено у погодженій формі.
+
+З повагою,
+ТОВ Ріва-Сталь`);
+  window.open(`mailto:${data.uoslabEmail}?subject=${subject}&body=${body}`,"_blank");
+  document.getElementById("content").innerHTML=`
+    <div class="success">
+      <div class="success-icon">✅</div>
+      <div class="success-title">Підтвердження надіслано</div>
+      <div class="success-sub">Лист з підтвердженням відкрито у вашій поштовій програмі.<br>Надішліть його на адресу <b>${data.uoslabEmail}</b></div>
+    </div>
+    <div class="footer">ТОВ УОСЛАБ · llc@uoslab.com</div>`;
+}
+
+function declineComp(data){
+  const subject = encodeURIComponent(`❌ Запит на компенсацію потребує уточнення — ${fmt(data.amount)}`);
+  const body = encodeURIComponent(
+`Вітаю,
+
+Отримано запит на компенсацію:
+Витрата: ${data.expLabel}
+Сума: ${fmt(data.amount)}
+
+На жаль, не можу підтвердити компенсацію у поточному вигляді. Прошу уточнити деталі.
+
+З повагою,
+ТОВ Ріва-Сталь`);
+  window.open(`mailto:${data.uoslabEmail}?subject=${subject}&body=${body}`,"_blank");
+  document.getElementById("content").innerHTML=`
+    <div class="success">
+      <div class="success-icon">📩</div>
+      <div class="success-title" style="color:#D97706">Лист з уточненнями надіслано</div>
+      <div class="success-sub">Відповідь відкрито у вашій поштовій програмі.</div>
+    </div>`;
+}
+
+window.onload = function(){
+  const data = getParams();
+  if(!data){
+    document.getElementById("content").innerHTML=`<div class="error">❌ Невірне посилання або дані пошкоджено.</div>`;
+    return;
+  }
+  document.getElementById("content").innerHTML=`
+    <h1>Запит на компенсацію витрат</h1>
+    <div class="sub">ТОВ УОСЛАБ просить підтвердити компенсацію наступних витрат</div>
+    <div class="amount">${fmt(data.amount)}</div>
+    <div class="info-block">
+      <div class="info-row"><span class="info-label">Витрата</span><span class="info-value">${data.expLabel}</span></div>
+      <div class="info-row"><span class="info-label">Форма компенсації</span><span class="info-value">${data.type}</span></div>
+      <div class="info-row"><span class="info-label">Дата запиту</span><span class="info-value">${fmtD(data.date)}</span></div>
+      <div class="info-row"><span class="info-label">Опис</span><span class="info-value">${data.description||"—"}</span></div>
+    </div>
+    <button class="btn-confirm" onclick='confirmComp(${JSON.stringify(data).replace(/'/g,"&#39;")})'>
+      ✅ Підтверджую компенсацію
+    </button>
+    <button class="btn-decline" onclick='declineComp(${JSON.stringify(data).replace(/'/g,"&#39;")})'>
+      Потребує уточнення
+    </button>
+    <div class="footer">
+      Натискаючи "Підтверджую", у вашій поштовій програмі відкриється лист-підтвердження.<br>
+      Надішліть його для завершення процедури.
+    </div>`;
+};
+</script>
+</body>
+</html>
