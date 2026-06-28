@@ -178,9 +178,20 @@
           <option>Логістика</option><option>Юридичні послуги</option><option>Інше</option>
         </select>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div><label class="field-label">Сума без ПДВ *</label><input class="field-input" type="number" id="ef-amountExVat"></div>
-        <div><label class="field-label">ПДВ</label><input class="field-input" type="number" id="ef-vat"></div>
+      <div><label class="field-label">Сума без ПДВ *</label>
+        <input class="field-input" type="text" inputmode="decimal" id="ef-amountExVat" placeholder="0.00" oninput="calcVat()">
+      </div>
+      <div>
+        <label class="field-label">ПДВ</label>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+            <input type="radio" name="vat_mode" value="20" onchange="calcVat()" checked> 20%
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+            <input type="radio" name="vat_mode" value="0" onchange="calcVat()"> Без ПДВ
+          </label>
+        </div>
+        <input class="field-input" type="text" id="ef-vat" placeholder="0.00" readonly style="background:#F8FAFC;color:#64748B">
       </div>
       <div><label class="field-label">Статус оплати</label>
         <select class="field-input" id="ef-paymentStatus">
@@ -406,14 +417,15 @@ function renderCompensations(){
     const st=c.status||"pending";
     const statusBadge={
       pending:`<span style="background:#FFF7ED;color:#C2410C;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600">🟡 Очікує запиту</span>`,
-      sent:`<span style="background:#EFF6FF;color:#1D4ED8;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600">📤 Запит надіслано</span>`,
+      sent:`<span style="background:#EFF6FF;color:#1D4ED8;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600">📤 Запит надіслано · чекаємо Ріву</span>`,
       confirmed:`<span style="background:#F0FDF4;color:#15803D;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600">✅ Ріва підтвердила</span>`,
       done:`<span style="background:#DCFCE7;color:#166534;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600">💚 Отримано</span>`,
     }[st]||"";
     const workflowBtn=
       st==="pending"?`<button class="action-btn" style="color:#1D4ED8;border-color:#BFDBFE" onclick="sendRequest(${c.id})">📤 Надіслати Ріві</button>`:
-      st==="sent"?`<button class="action-btn" style="color:#15803D;border-color:#BBF7D0" onclick="markConfirmed(${c.id})">✅ Ріва підтвердила</button>`:
-      st==="confirmed"?`<button class="action-btn" style="color:#166534;border-color:#86EFAC" onclick="markDone(${c.id})">💚 Отримано</button>`:"";
+      st==="sent"?`<button class="action-btn" style="color:#15803D;border-color:#BBF7D0" onclick="markConfirmed(${c.id})">✅ Підтвердження отримано</button>`:
+      st==="confirmed"?`<button class="action-btn" style="color:#166534;border-color:#86EFAC" onclick="markDone(${c.id})">💚 Компенсацію отримано</button>`:"";
+    const sentHint= st==="sent"?`<div style="font-size:10px;color:#94A3B8;margin-top:4px">Очікуємо підтвердження від Ріви</div>`:"";
     return`<tr class="${i%2===0?"tr-even":"tr-odd"}">
       <td style="color:#94A3B8;font-size:11px">${c.id}</td>
       <td style="white-space:nowrap">${fmtD(c.date)}</td>
@@ -422,7 +434,7 @@ function renderCompensations(){
       <td style="font-size:12px;color:#64748B">${expLabel}</td>
       <td class="r" style="font-weight:700;color:#16A34A">${fmt(c.amount)}</td>
       <td>${statusBadge}</td>
-      <td style="white-space:nowrap">${workflowBtn}</td>
+      <td style="white-space:nowrap">${workflowBtn}${sentHint||""}</td>
       <td style="white-space:nowrap">
         <button class="action-btn" onclick="openEditComp(${c.id})">Ред.</button>
         <button class="del-btn" onclick="openDelete('comp',${c.id})">×</button>
@@ -513,6 +525,8 @@ function openEditExpense(id){
   document.getElementById("ef-description").value=r.description||"";
   document.getElementById("ef-category").value=r.category||"Сертифікація";
   document.getElementById("ef-amountExVat").value=r.amountExVat||"";
+  const vatMode = r.vat > 0 ? "20" : "0";
+  document.querySelectorAll('input[name="vat_mode"]').forEach(el=>el.checked=(el.value===vatMode));
   document.getElementById("ef-vat").value=r.vat||"";
   document.getElementById("ef-paymentStatus").value=r.paymentStatus||"Очікує оплати";
   document.getElementById("ef-notes").value=r.notes||"";
@@ -527,8 +541,8 @@ function saveExpense(){
   const entry={date,contractor,description,
     docRef:document.getElementById("ef-docRef").value.trim(),
     category:document.getElementById("ef-category").value,
-    amountExVat:n(document.getElementById("ef-amountExVat").value),
-    vat:n(document.getElementById("ef-vat").value),
+    amountExVat:parseFloat(document.getElementById("ef-amountExVat").value.replace(",",".")) || 0,
+    vat:parseFloat(document.getElementById("ef-vat").value.replace(",",".")) || 0,
     paymentStatus:document.getElementById("ef-paymentStatus").value,
     notes:document.getElementById("ef-notes").value.trim()};
   if(editExpId){expenses=expenses.map(r=>r.id===editExpId?{...entry,id:editExpId}:r);}
@@ -651,7 +665,7 @@ function buildConfirmLink(compId){
     expLabel:exp?`${exp.contractor} / ${exp.docRef||exp.category}`:"Загальна",
     uoslabEmail:UOSLAB_EMAIL
   })));
-  return`confirm.html?d=${data}`;
+  return data;
 }
 
 function sendRequest(compId){
@@ -701,6 +715,13 @@ function markDone(compId){
   if(!confirm("Підтвердити що компенсацію фактично отримано?"))return;
   compensations=compensations.map(x=>x.id===compId?{...x,status:"done",doneDate:new Date().toISOString().slice(0,10)}:x);
   persist();render();
+}
+
+function calcVat(){
+  const amt = parseFloat(document.getElementById("ef-amountExVat").value.replace(",",".")) || 0;
+  const mode = document.querySelector('input[name="vat_mode"]:checked')?.value || "20";
+  const vat = mode === "20" ? Math.round(amt * 0.2 * 100) / 100 : 0;
+  document.getElementById("ef-vat").value = vat > 0 ? vat.toFixed(2) : "";
 }
 
 render();
