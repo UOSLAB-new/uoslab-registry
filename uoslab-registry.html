@@ -737,28 +737,6 @@ function markConfirmed(compId){
 
 Для підтвердження натисніть посилання:
 ${shortUrl}`);
-  // Try to shorten URL via TinyURL
-  let shortUrl = confirmUrl;
-  try {
-    const resp = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(confirmUrl)}`);
-    if(resp.ok) shortUrl = await resp.text();
-  } catch(e) { /* fallback to full URL */ }
-  
-  const plainBody = encodeURIComponent(
-`Шановний партнер,
-
-УОСЛАБ направляє запит на компенсацію понесених витрат:
-
-Витрата: ${expLabel}
-Форма компенсації: ${c.type}
-Сума: ${fmt(c.amount)}
-Опис: ${c.description||"—"}
-Очікувана дата: ${c.expectedDate?fmtD(c.expectedDate):"—"}
-
-Для підтвердження натисніть посилання:
-${shortUrl}`);
-  window.open(`mailto:${RIVA_EMAILS}?subject=${subject}&body=${plainBody}`,"_blank");
-  persist();render();
 }
 
 function markDone(compId){
