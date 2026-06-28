@@ -697,17 +697,6 @@ async function sendRequest(compId){
 Витрата: ${expLabel}
 Форма компенсації: ${c.type}
 Сума: ${fmt(c.amount)}
-Опис: ${c.description||"—"}
-Очікувана дата: ${c.expectedDate?fmtD(c.expectedDate):"—"}
-
-Для підтвердження компенсації, будь ласка, перейдіть за посиланням:
-${window.location.origin}${window.location.pathname.replace('uoslab-registry.html','')}${link}
-
-З повагою,
-ТОВ УОСЛАБ
-${UOSLAB_EMAIL}`);
-  // Send request via mailto
-
   compensations=compensations.map(x=>x.id===compId?{...x,status:"sent",sentDate:new Date().toISOString().slice(0,10)}:x);
   persist();render();
 }
